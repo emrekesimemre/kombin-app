@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Box, CircularProgress, Typography } from '@mui/material';
+import imageCompression from 'browser-image-compression';
 import { toast } from 'react-toastify';
 import AddTab from './components/home/AddTab';
 import BottomNav from './components/home/BottomNav';
@@ -64,6 +65,14 @@ const normalizeWeatherData = (value: unknown): WeatherData | null => {
     },
   };
 };
+
+const fileToDataUrl = (inputFile: File) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error('Dosya okunamadı'));
+    reader.readAsDataURL(inputFile);
+  });
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>('add');
@@ -176,27 +185,30 @@ export default function Home() {
     setIsUploading(true);
 
     try {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = async () => {
-        const res = await fetch('/api/clothes', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imageBase64: reader.result }),
-        });
+      const compressedFile = await imageCompression(file, {
+        maxSizeMB: 0.8,
+        maxWidthOrHeight: 1024,
+        useWebWorker: true,
+      });
 
-        if (res.ok) {
-          toast.success('Dolabına başarıyla eklendi! 👗');
-          setFile(null);
-          setPreview(null);
-          fetchWardrobe();
-        } else {
-          toast.error('Yükleme başarısız oldu');
-        }
-      };
+      const imageBase64 = await fileToDataUrl(compressedFile);
+      const res = await fetch('/api/clothes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64 }),
+      });
+
+      if (res.ok) {
+        toast.success('Dolabına başarıyla eklendi! 👗');
+        setFile(null);
+        setPreview(null);
+        fetchWardrobe();
+      } else {
+        toast.error('Yükleme başarısız oldu');
+      }
     } catch (error) {
       console.error(error);
-      toast.error('Hata oluştu');
+      toast.error('Fotoğraf işlenirken/yüklenirken hata oluştu');
     } finally {
       setIsUploading(false);
     }
