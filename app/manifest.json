@@ -1,0 +1,33 @@
+{
+  "name": "Dijital Gardirobum",
+  "short_name": "Gardirobum",
+  "description": "Yapay zeka destekli kisisel stil asistani",
+  "lang": "tr",
+  "dir": "ltr",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fdf2f8",
+  "theme_color": "#fdf2f8",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
